@@ -71,7 +71,7 @@ export function calcularProximoSorteo(sorteos: Sorteo[]): NextDraw | null {
 }
 
 export function formatoRelativo(dias: number): string {
-  if (dias === 0) return '¡Hoy! 🎱';
+  if (dias === 0) return '¡Hoy! 🍀';
   if (dias < 0) return `hace ${Math.abs(dias)} días`;
   if (dias === 1) return '1 día';
   return `${dias} días`;

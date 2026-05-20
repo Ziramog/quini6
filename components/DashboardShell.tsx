@@ -62,7 +62,7 @@ export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }
         {nextDraw && (
           <div className={`${drawBg} text-white text-xs font-medium px-4 py-2 flex items-center justify-between gap-3`}>
             <div className="flex items-center gap-2">
-              <span className="text-base">🎱</span>
+              <span className="text-base">🍀</span>
               <span>
                 <span className="font-semibold">Próximo {is2da ? '2DA-TRAD' : 'SALE-REV'}: </span>
                 <span className="font-bold">{nextDraw.label}</span>

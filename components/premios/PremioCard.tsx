@@ -129,7 +129,7 @@ export function PremioCard() {
                       {p.aciertos != null ? (ACIERTO_LABELS[p.aciertos] || `${p.aciertos} ac`) : '—'}
                     </td>
                     <td className={`py-1.5 text-center font-semibold ${p.ganadores === 'Vacante' ? 'text-red-600' : 'text-gray-800'}`}>
-                      {p.ganadores === 'Vacante' ? '🎱 Vacante' : p.ganadores}
+                      {p.ganadores === 'Vacante' ? '🍀 Vacante' : p.ganadores}
                     </td>
                     <td className={`py-1.5 text-right font-bold ${p.ganadores === 'Vacante' ? 'text-green-600' : 'text-gray-900'}`}>
                       ${formatPremio(p.premio)}
