@@ -39,11 +39,9 @@ export function Sidebar({ activeTab, onTabChange }: Props) {
       {/* Mobile hamburger button — floating top-left */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg flex items-center justify-center transition-colors"
+        className="md:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg flex items-center justify-center transition-colors animate-pulse"
       >
-        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
+        <span className="text-white font-bold text-lg">Σ</span>
       </button>
 
       {/* Mobile backdrop */}
