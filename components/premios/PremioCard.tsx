@@ -46,6 +46,8 @@ export function PremioCard() {
       .then(r => r.json())
       .then(data => { setPremios(Array.isArray(data) ? data : []); })
       .catch(() => setPremios([]));
+    // Auto-sync on mount
+    sync();
   }, []);
 
   async function sync() {
