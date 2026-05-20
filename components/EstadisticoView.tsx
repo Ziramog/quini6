@@ -2,7 +2,6 @@
 import { Sorteo } from '@/lib/types';
 import { EstadisticaNumero, calcularEstadisticas } from '@/lib/analysis';
 import { AnalisisContainer } from './analisis/AnalisisContainer';
-import { PremioCard } from './premios/PremioCard';
 
 interface Props {
   sorteos: Sorteo[];
@@ -18,7 +17,6 @@ export function EstadisticoView({ sorteos }: Props) {
         <p className="text-xs text-gray-500">{sorteos.length} sorteos analizados</p>
       </div>
       <div className="flex-1 overflow-auto">
-        <PremioCard />
         <AnalisisContainer sorteos={sorteos} stats={stats} />
       </div>
     </div>
