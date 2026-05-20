@@ -38,8 +38,8 @@ export function AnalisisGraficos({ stats, sorteos }: Props) {
       <div className="bg-white rounded-lg p-4 shadow-sm">
         <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-1">Distribución por decenas</h3>
         <p className="text-xs text-gray-400 mb-3">Los 46 números se dividen en 5 grupos de 10: 0-9, 10-19, 20-29, 30-39 y 40-46. Este gráfico muestra cuántos números de cada grupo aparecen promedio por sorteo. Si un grupo aparece mucho, significa que tiene números que salen con frecuencia.</p>
-        <div className="flex items-center gap-4">
-          <ResponsiveContainer width={160} height={160}>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <ResponsiveContainer width="100%" height={160}>
             <PieChart>
               <Pie data={decenasDist} dataKey="count" nameKey="decena" cx="50%" cy="50%" outerRadius={65} innerRadius={30}>
                 {decenasDist.map((_, i) => <Cell key={i} fill={DECENA_COLORS[i]} />)}

@@ -1,6 +1,6 @@
-export type Tab = 'historico' | 'estadistico' | 'historico2da';
+export type Tab = 'historico' | 'estadistico' | 'historico2da' | 'estadistico2da';
 
-export type TipoSorteo = 'SALE' | 'REV' | 'TRAD';
+export type TipoSorteo = 'SALE' | 'REV' | 'TRAD' | '2DA';
 
 export interface Sorteo {
   id: string;

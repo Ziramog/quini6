@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSorteos2da } from '@/lib/db';
 
 export async function GET() {
-  const { data, error } = await supabase
-    .from('sorteos')
-    .select('*')
-    .eq('tipo', 'TRAD')
-    .order('fecha', { ascending: false })
-    .order('tipo', { ascending: false });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  try {
+    const rows = await getSorteos2da();
+    // rows are fecha desc (newest first); oldest gets num=rows.length, newest gets num=1
+    const data = rows.map((s, i) => ({ ...s, num: rows.length - i }));
+    return NextResponse.json(data);
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
 }

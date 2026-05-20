@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { SorteosTable } from '@/components/SorteosTable';
 import { SyncButton } from '@/components/SyncButton';
-import { ResetButton } from '@/components/ResetButton';
 import { UltimaSync } from '@/lib/types';
 
 interface Props {
@@ -12,10 +11,10 @@ interface Props {
 }
 
 export function HistoricoView({ sorteos, ultimaSync, total }: Props) {
-  const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   async function exportPDF() {
-    setLoading(true);
+    setPdfLoading(true);
     try {
       const res = await fetch('/api/pdf');
       if (!res.ok) throw new Error('PDF generation failed');
@@ -30,29 +29,45 @@ export function HistoricoView({ sorteos, ultimaSync, total }: Props) {
       console.error(err);
       alert('Error generando PDF');
     } finally {
-      setLoading(false);
+      setPdfLoading(false);
     }
   }
 
+  const lastSyncLabel = ultimaSync
+    ? `Último sync: ${new Date(ultimaSync.ejecutado_en).toLocaleString('es-AR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${ultimaSync.nuevos} nuevos`
+    : 'Sin datos de sync';
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 no-print">
-        <div>
-          <h2 className="text-sm font-semibold text-gray-700">Histórico de sorteos</h2>
-          <p className="text-xs text-gray-500">{total} sorteos cargados</p>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 no-print gap-4">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-gray-800">Histórico SALE-REV</h2>
+          <p className="text-xs text-gray-500 mt-0.5">{total} sorteos cargados</p>
+          <p className="text-xs text-gray-400">{lastSyncLabel}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={exportPDF}
-            disabled={loading}
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition"
+            disabled={pdfLoading}
+            className="flex items-center gap-1.5 px-3 py-2 bg-gray-500 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg text-xs font-medium transition"
           >
-            {loading ? '⏳ Generando...' : '🖨️ Exportar PDF'}
+            {pdfLoading ? '⏳' : '🖨️'} PDF
           </button>
-          <SyncButton ultimaSync={ultimaSync} />
-          <ResetButton />
+          <button
+            onClick={async () => {
+              const res = await fetch('/api/sync', { method: 'POST' });
+              const json = await res.json();
+              if (json.ok) window.location.reload();
+              else alert(json.error || 'Error');
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition"
+          >
+            🔄 Sincronizar
+          </button>
         </div>
       </div>
+
       <div className="flex-1 overflow-auto p-4">
         <SorteosTable sorteos={sorteos} />
       </div>

@@ -21,7 +21,9 @@ function pad(n: number) {
 }
 
 export default async function Print2daRoute() {
-  const sorteos = await getSorteos2da();
+  const rows = await getSorteos2da();
+  // rows are fecha desc (newest first); oldest gets num=rows.length, newest gets num=1
+  const sorteos = rows.map((s, i) => ({ ...s, num: rows.length - i }));
 
   return (
     <div style={{ padding: '5mm 15mm', background: 'white' }}>

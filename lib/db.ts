@@ -5,6 +5,7 @@ export async function getSorteos(limit?: number, offset?: number): Promise<Sorte
   const query = supabase
     .from('sorteos')
     .select('*')
+    .in('tipo', ['SALE', 'REV'])
     .order('fecha', { ascending: false })
     .order('tipo', { ascending: false });
   if (limit != null) query.range(offset ?? 0, (offset ?? 0) + limit - 1);
@@ -17,6 +18,7 @@ export async function getAllSorteos(): Promise<Sorteo[]> {
   const { data, error } = await supabase
     .from('sorteos')
     .select('*')
+    .in('tipo', ['SALE', 'REV'])
     .order('fecha', { ascending: false })
     .order('tipo', { ascending: false });
   if (error) throw new Error(error.message);
@@ -35,9 +37,9 @@ export async function getSorteos2da(): Promise<Sorteo[]> {
   const { data, error } = await supabase
     .from('sorteos')
     .select('*')
-    .eq('tipo', 'TRAD')
+    .in('tipo', ['TRAD', '2DA'])
     .order('fecha', { ascending: false })
-    .order('tipo', { ascending: false });
+    .order('tipo', { ascending: true });
   if (error) throw new Error(error.message);
   return data as Sorteo[];
 }

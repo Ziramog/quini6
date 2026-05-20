@@ -6,9 +6,11 @@ import { Sorteo } from '@/lib/types';
 export async function POST() {
   try {
     const rawTRAD = await scrapeTipo('TRAD');
+    await new Promise(r => setTimeout(r, 1000));
+    const raw2DA  = await scrapeTipo('2DA');
 
     const existentes = await getIdsExistentes();
-    const nuevos = rawTRAD
+    const nuevos = [...rawTRAD, ...raw2DA]
       .filter(s => s.id && !existentes.has(s.id)) as Sorteo[];
 
     if (nuevos.length > 0) {

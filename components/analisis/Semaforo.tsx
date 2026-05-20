@@ -19,7 +19,7 @@ export function Semaforo({ stats }: Props) {
     <div className="bg-white rounded-lg p-4 shadow-sm">
       <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-1">Semáforo de números</h3>
       <p className="text-xs text-gray-400 mb-3">Cada número puede estar "caliente" (sale mucho), "normal", "atrasado" (debería salir y no salió) o "vencido" (hace mucho que no sale y ya pasó su ciclo esperado). Pasá el mouse por arriba de cada número para ver sus estadísticas detalladas.</p>
-      <div className="grid grid-cols-10 gap-1">
+      <div className="grid grid-cols-5 sm:grid-cols-10 gap-1">
         {sorted.map(s => {
           const c = estadoColor(s.estado);
           return (

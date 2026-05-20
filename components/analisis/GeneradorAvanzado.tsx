@@ -49,13 +49,16 @@ export function GeneradorAvanzado({ stats }: Props) {
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs uppercase tracking-wide text-gray-500">Generador inteligente</h3>
-      <p className="text-xs text-gray-400 mb-3">Este generador no elige números al azar — usa las estadísticas de todos los sorteos para armar tarjetas que caigan dentro de los rangos más probables (suma 111-180, 2-4 pares, sin consecutivos). Podés filtrar por modo SALE o REV y priorizar números que están "vencidos" según el semáforo.</p>
-        <div className="flex gap-2">
-          <button onClick={() => generar(1)} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg font-medium">🎲 1 Tarjeta</button>
-          <button onClick={() => generar(5)} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg font-medium">🎲 5 Tarjetas</button>
-          <button onClick={() => generar(10)} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg font-medium">🎲 10 Tarjetas</button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+        <div>
+          <h3 className="text-xs uppercase tracking-wide text-gray-500">Generador inteligente</h3>
+          <p className="text-xs text-gray-400 mt-1">Usa estadísticas históricas para crear tarjetas dentro de rangos probables (suma 111-180, 2-4 pares, sin consecutivos). Filtrá por modo SALE/REV y priorizá números vencidos.</p>
+        </div>
+        <div className="flex gap-2 shrink-0">
+          <button onClick={() => generar(1)} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg font-medium">🎲 1</button>
+          <button onClick={() => generar(5)} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg font-medium">🎲 5</button>
+          <button onClick={() => generar(10)} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg font-medium">🎲 10</button>
+          <button onClick={() => setCards([])} className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs rounded-lg font-medium">🗑️ Limpiar</button>
         </div>
       </div>
 
@@ -66,7 +69,7 @@ export function GeneradorAvanzado({ stats }: Props) {
           <select
             value={config.modo}
             onChange={e => setConfig(c => ({ ...c, modo: e.target.value as 'SALE' | 'REV' | 'AMBOS' }))}
-            className="w-full border rounded px-2 py-1"
+            className="w-full border rounded px-2 py-1.5"
           >
             <option value="AMBOS">Ambos</option>
             <option value="SALE">SALE</option>
@@ -75,15 +78,15 @@ export function GeneradorAvanzado({ stats }: Props) {
         </div>
         <div>
           <label className="block text-gray-500 mb-1">Suma mín</label>
-          <input type="number" value={config.filtroSuma[0]} onChange={e => setConfig(c => ({ ...c, filtroSuma: [Number(e.target.value), c.filtroSuma[1]] }))} className="w-full border rounded px-2 py-1" />
+          <input type="number" value={config.filtroSuma[0]} onChange={e => setConfig(c => ({ ...c, filtroSuma: [Number(e.target.value), c.filtroSuma[1]] }))} className="w-full border rounded px-2 py-1.5" />
         </div>
         <div>
           <label className="block text-gray-500 mb-1">Suma máx</label>
-          <input type="number" value={config.filtroSuma[1]} onChange={e => setConfig(c => ({ ...c, filtroSuma: [c.filtroSuma[0], Number(e.target.value)] }))} className="w-full border rounded px-2 py-1" />
+          <input type="number" value={config.filtroSuma[1]} onChange={e => setConfig(c => ({ ...c, filtroSuma: [c.filtroSuma[0], Number(e.target.value)] }))} className="w-full border rounded px-2 py-1.5" />
         </div>
-        <div className="flex items-center gap-2">
-          <input type="checkbox" checked={config.incluirVencidos} onChange={e => setConfig(c => ({ ...c, incluirVencidos: e.target.checked }))} />
-          <label>Priorizar vencidos</label>
+        <div className="flex items-center gap-2 pt-4">
+          <input type="checkbox" checked={config.incluirVencidos} onChange={e => setConfig(c => ({ ...c, incluirVencidos: e.target.checked }))} id="chkVencidos" />
+          <label htmlFor="chkVencidos">Priorizar vencidos</label>
         </div>
       </div>
 
