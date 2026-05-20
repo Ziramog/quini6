@@ -1,3 +1,4 @@
+export { supabase, supabaseAdmin } from './supabase';
 import { supabase, supabaseAdmin } from './supabase';
 import { Sorteo, UltimaSync } from './types';
 
