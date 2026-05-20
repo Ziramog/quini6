@@ -7,6 +7,7 @@ import { EstadisticoView } from '@/components/EstadisticoView';
 import { Historico2daView } from '@/components/Historico2daView';
 import { Estadistico2daView } from '@/components/Estadistico2daView';
 import { PremiadosView } from '@/components/PremiadosView';
+import { BottomNav } from '@/components/BottomNav';
 import { Sorteo, UltimaSync } from '@/lib/types';
 import { EstadisticaNumero } from '@/lib/analysis';
 import { SplashScreen } from '@/components/SplashScreen';
@@ -51,7 +52,7 @@ export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }
       <div className="sidebar-print">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
-      <main className="flex-1 overflow-hidden bg-gray-50">
+      <main className="flex-1 overflow-hidden bg-gray-50 pb-16 md:pb-0">
         {/* Mobile top bar */}
         <div className="md:hidden flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700 shadow-sm">
           <img src="/duende.png" alt="logo" className="w-7 h-7 object-contain" />
@@ -92,6 +93,7 @@ export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }
         {activeTab === 'premios' && (
           <PremiadosView />
         )}
+        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
       </main>
     </div>
     </>
