@@ -27,6 +27,16 @@ function colorFondoNumero(n: number): string {
 export function SorteosTable({ sorteos }: { sorteos: Sorteo[] }) {
   return (
     <div className="overflow-x-auto">
+      <style>{`
+        @keyframes row-enter {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .sorteos-table tbody tr {
+          opacity: 0;
+          animation: row-enter 0.3s ease-out forwards;
+        }
+      `}</style>
       <table className="sorteos-table w-full text-sm border-collapse bg-white text-gray-900 rounded-lg overflow-hidden">
         <thead>
           <tr className="bg-gray-100 text-xs uppercase tracking-wide text-gray-500">
@@ -43,7 +53,11 @@ export function SorteosTable({ sorteos }: { sorteos: Sorteo[] }) {
         </thead>
         <tbody>
           {sorteos.map((s, i) => (
-            <tr key={s.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+            <tr
+              key={s.id}
+              style={{ animationDelay: `${Math.min(i * 25, 600)}ms` }}
+              className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+            >
               <td className="hidden md:table-cell px-1 py-1.5 text-right text-gray-400 text-xs tabular-nums">{s.num}</td>
               <td className="px-1 py-1.5 text-gray-700 whitespace-nowrap text-xs">{s.fecha_display}</td>
               {numerosArray(s).map((n, j) => (
