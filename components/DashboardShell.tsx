@@ -66,7 +66,9 @@ export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }
               <span>
                 <span className="font-semibold">Próximo {is2da ? '2DA-TRAD' : 'SALE-REV'}: </span>
                 <span className="font-bold">{nextDraw.label}</span>
-                <span className="ml-1 opacity-90">({nextDraw.tipos.join('+')})</span>
+                {nextDraw.tipos.length > 0 && (
+                  <span className="ml-1 opacity-90">({nextDraw.tipos.join('+')})</span>
+                )}
               </span>
             </div>
             <span className={`shrink-0 font-bold ${nextDraw.esHoy ? 'animate-pulse' : ''}`}>
