@@ -8,6 +8,7 @@ import { Historico2daView } from '@/components/Historico2daView';
 import { Estadistico2daView } from '@/components/Estadistico2daView';
 import { Sorteo, UltimaSync } from '@/lib/types';
 import { EstadisticaNumero } from '@/lib/analysis';
+import { SplashScreen } from '@/components/SplashScreen';
 
 interface Props {
   sorteos: Sorteo[];
@@ -26,9 +27,12 @@ const TAB_LABELS: Record<Tab, string> = {
 
 export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('historico');
+  const [showSplash, setShowSplash] = useState(true);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <>
+      {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
+      <div className="flex h-screen overflow-hidden">
       <div className="sidebar-print">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
@@ -52,5 +56,6 @@ export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }
         )}
       </main>
     </div>
+    </>
   );
 }
