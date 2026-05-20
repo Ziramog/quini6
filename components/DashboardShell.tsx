@@ -124,8 +124,8 @@ export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }
                 }
               `}</style>
               <div className="p-4 space-y-2">
-                <p className="text-xs text-slate-400 uppercase tracking-widest mb-3">Análisis Estadístico</p>
-                {(['estadistico', 'estadistico2da'] as Tab[]).map(tab => (
+                <p className="text-xs text-slate-400 uppercase tracking-widest mb-3">Navegación</p>
+                {(['historico', 'historico2da', 'estadistico', 'estadistico2da'] as Tab[]).map(tab => (
                   <button
                     key={tab}
                     onClick={() => { setActiveTab(tab); setShowEstadisticos(false); }}
