@@ -1,5 +1,3 @@
-import { Sorteo } from './types';
-
 export interface Premio {
   tipo: string;
   aciertos: number | null;

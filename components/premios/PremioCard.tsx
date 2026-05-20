@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
 
-interface PremioRow {
+interface PremioApiRow {
+  id: number;
+  fecha: string;
   tipo: string;
   aciertos: number | null;
-  ganancia: string;
+  ganadores: string;
   premio: string;
 }
 
@@ -30,20 +32,20 @@ const ACIERTO_LABELS: Record<number, string> = {
   4: '4 aciertos',
 };
 
-function formatPremio(precio: string): string {
-  return precio.replace(/\.(\d{3})/g, ',$1');
+function formatPremio(p: string): string {
+  return p.replace(/\.(\d{3})/g, ',$1');
 }
 
 export function PremioCard() {
-  const [premios, setPremios] = useState<PremioRow[]>([]);
+  const [premios, setPremios] = useState<PremioApiRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
 
   useEffect(() => {
     fetch('/api/premios')
       .then(r => r.json())
-      .then(setPremios)
-      .catch(() => {});
+      .then(data => { setPremios(Array.isArray(data) ? data : []); })
+      .catch(() => setPremios([]));
   }, []);
 
   async function sync() {
@@ -56,7 +58,7 @@ export function PremioCard() {
         setSyncMsg(`✓ ${json.count} premios · ${json.fecha}`);
         const fetchRes = await fetch('/api/premios');
         const fetchData = await fetchRes.json();
-        setPremios(fetchData);
+        setPremios(Array.isArray(fetchData) ? fetchData : []);
       } else {
         setSyncMsg(`✗ ${json.error}`);
       }
@@ -68,7 +70,7 @@ export function PremioCard() {
   }
 
   // Group by tipo
-  const grouped = premios.reduce<Record<string, PremioRow[]>>((acc, p) => {
+  const grouped = premios.reduce<Record<string, PremioApiRow[]>>((acc, p) => {
     if (!acc[p.tipo]) acc[p.tipo] = [];
     acc[p.tipo].push(p);
     return acc;
@@ -80,9 +82,7 @@ export function PremioCard() {
         <div>
           <h3 className="text-xs uppercase tracking-wide text-gray-500">Premios del último sorteo</h3>
           {premios.length > 0 && (
-            <p className="text-xs text-gray-400 mt-0.5">
-              {Object.keys(grouped)[0] ? TIPO_LABELS[Object.keys(grouped)[0]] || '' : ''} — {premios[0]?.premio}
-            </p>
+            <p className="text-xs text-gray-400 mt-0.5">{premios[0].fecha}</p>
           )}
         </div>
         <button
@@ -124,12 +124,12 @@ export function PremioCard() {
                 {rows.map((p, i) => (
                   <tr key={i}>
                     <td className="py-1.5 pr-3 text-gray-600">
-                      {p.aciertos != null ? ACIERTO_LABELS[p.aciertos] || `${p.aciertos} ac` : '—'}
+                      {p.aciertos != null ? (ACIERTO_LABELS[p.aciertos] || `${p.aciertos} ac`) : '—'}
                     </td>
-                    <td className={`py-1.5 text-center font-semibold ${p.ganancia === 'Vacante' ? 'text-red-600' : 'text-gray-800'}`}>
-                      {p.ganancia === 'Vacante' ? '🎱 Vacante' : p.ganancia}
+                    <td className={`py-1.5 text-center font-semibold ${p.ganadores === 'Vacante' ? 'text-red-600' : 'text-gray-800'}`}>
+                      {p.ganadores === 'Vacante' ? '🎱 Vacante' : p.ganadores}
                     </td>
-                    <td className={`py-1.5 text-right font-bold ${p.ganancia === 'Vacante' ? 'text-green-600' : 'text-gray-900'}`}>
+                    <td className={`py-1.5 text-right font-bold ${p.ganadores === 'Vacante' ? 'text-green-600' : 'text-gray-900'}`}>
                       ${formatPremio(p.premio)}
                     </td>
                   </tr>
