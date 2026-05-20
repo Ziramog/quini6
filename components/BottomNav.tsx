@@ -1,16 +1,16 @@
 'use client';
-import { Home, BarChart3, Target, Bell, Menu } from 'lucide-react';
+import { Home, Target, Bell, Menu } from 'lucide-react';
 import { Tab } from '@/lib/types';
 
 interface NavItem {
-  id: Tab | 'generator' | 'alerts' | 'more';
+  id: Tab | 'generator' | 'alerts' | 'more' | 'estadisticos';
   label: string;
   icon: React.ReactNode;
 }
 
 const navItems: NavItem[] = [
   { id: 'historico', label: 'Inicio', icon: <Home size={20} strokeWidth={1.8} /> },
-  { id: 'estadistico', label: 'Estadísticas', icon: <BarChart3 size={20} strokeWidth={1.8} /> },
+  { id: 'estadisticos', label: 'Σ', icon: <span className="text-base font-bold">Σ</span> },
   { id: 'generator', label: 'Mis Números', icon: <Target size={20} strokeWidth={1.8} /> },
   { id: 'alerts', label: 'Alertas', icon: <Bell size={20} strokeWidth={1.8} /> },
   { id: 'more', label: 'Más', icon: <Menu size={20} strokeWidth={1.8} /> },
@@ -20,21 +20,24 @@ interface BottomNavProps {
   activeTab: Tab;
   onTabChange: (tab: Tab) => void;
   onMorePress?: () => void;
+  onEstadisticosPress?: () => void;
 }
 
-export function BottomNav({ activeTab, onTabChange, onMorePress }: BottomNavProps) {
+export function BottomNav({ activeTab, onTabChange, onMorePress, onEstadisticosPress }: BottomNavProps) {
   function handlePress(id: NavItem['id']) {
     if (id === 'more') {
       onMorePress?.();
       return;
     }
+    if (id === 'estadisticos') {
+      onEstadisticosPress?.();
+      return;
+    }
     if (id === 'generator') {
-      // Navigate to estadistico tab which contains the generator
       onTabChange('estadistico');
       return;
     }
     if (id === 'alerts') {
-      // Alerts tab — for now open premios as placeholder
       onTabChange('premios');
       return;
     }
@@ -73,8 +76,9 @@ export function BottomNav({ activeTab, onTabChange, onMorePress }: BottomNavProp
         <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
             const isActive = item.id === activeTab ||
-              (item.id === 'generator' && activeTab === 'estadistico') ||
-              (item.id === 'alerts' && activeTab === 'premios');
+              (item.id === 'generator' && (activeTab === 'estadistico' || activeTab === 'estadistico2da')) ||
+              (item.id === 'alerts' && activeTab === 'premios') ||
+              (item.id === 'estadisticos' && (activeTab === 'estadistico' || activeTab === 'estadistico2da'));
             return (
               <button
                 key={item.id}

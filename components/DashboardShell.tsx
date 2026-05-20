@@ -32,6 +32,7 @@ const TAB_LABELS: Record<Tab, string> = {
 export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('historico');
   const [showSplash, setShowSplash] = useState(true);
+  const [showEstadisticos, setShowEstadisticos] = useState(false);
 
   // Which sorteos to use based on active tab
   const is2da = activeTab === 'historico2da' || activeTab === 'estadistico2da';
@@ -93,7 +94,54 @@ export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }
         {activeTab === 'premios' && (
           <PremiadosView />
         )}
-        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+        <BottomNav
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onEstadisticosPress={() => setShowEstadisticos(v => !v)}
+        />
+
+        {/* Σ — estadisticos slide-up panel */}
+        {showEstadisticos && (
+          <>
+            <div
+              className="md:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+              onClick={() => setShowEstadisticos(false)}
+            />
+            <div
+              className="md:hidden fixed bottom-14 left-0 right-0 z-50 rounded-t-2xl overflow-hidden"
+              style={{
+                background: 'rgba(15, 23, 42, 0.95)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderTop: '1px solid rgba(255,255,255,0.08)',
+                animation: 'slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+              }}
+            >
+              <style>{`
+                @keyframes slideUp {
+                  from { transform: translateY(100%); }
+                  to   { transform: translateY(0); }
+                }
+              `}</style>
+              <div className="p-4 space-y-2">
+                <p className="text-xs text-slate-400 uppercase tracking-widest mb-3">Análisis Estadístico</p>
+                {(['estadistico', 'estadistico2da'] as Tab[]).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => { setActiveTab(tab); setShowEstadisticos(false); }}
+                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                      activeTab === tab
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-300 hover:bg-slate-700/60'
+                    }`}
+                  >
+                    {TAB_LABELS[tab]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </main>
     </div>
     </>
