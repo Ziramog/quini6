@@ -39,6 +39,9 @@ export function GeneradorAvanzado({ stats }: Props) {
     filtroParidad: [2, 4],
     filtroSuma: [111, 180],
     penalizarConsecutivos: true,
+    usarParesFrecuentes: true,
+    usarTripletas: true,
+    evitarRepeticionReciente: true,
   });
   const [cards, setCards] = useState<TarjetaGenerada[]>([]);
 
@@ -84,9 +87,19 @@ export function GeneradorAvanzado({ stats }: Props) {
           <label className="block text-gray-500 mb-1">Suma máx</label>
           <input type="number" value={config.filtroSuma[1]} onChange={e => setConfig(c => ({ ...c, filtroSuma: [c.filtroSuma[0], Number(e.target.value)] }))} className="w-full border rounded px-2 py-1.5" />
         </div>
-        <div className="flex items-center gap-2 pt-4">
-          <input type="checkbox" checked={config.incluirVencidos} onChange={e => setConfig(c => ({ ...c, incluirVencidos: e.target.checked }))} id="chkVencidos" />
-          <label htmlFor="chkVencidos">Priorizar vencidos</label>
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5">
+            <input type="checkbox" checked={config.incluirVencidos} onChange={e => setConfig(c => ({ ...c, incluirVencidos: e.target.checked }))} id="chkVencidos" />
+            <label htmlFor="chkVencidos">Vencidos</label>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <input type="checkbox" checked={config.usarParesFrecuentes} onChange={e => setConfig(c => ({ ...c, usarParesFrecuentes: e.target.checked }))} id="chkPares" />
+            <label htmlFor="chkPares">Pares f.</label>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <input type="checkbox" checked={config.evitarRepeticionReciente} onChange={e => setConfig(c => ({ ...c, evitarRepeticionReciente: e.target.checked }))} id="chkRep" />
+            <label htmlFor="chkRep">Evitar último</label>
+          </div>
         </div>
       </div>
 

@@ -5,6 +5,8 @@ export interface EstadisticaNumero {
   frecuencia: number;
   frecSALE: number;
   frecREV: number;
+  frecTRAD: number;
+  frec2DA: number;
   ultimaVez: string;
   ausencia: number;
   puntaje: number;
@@ -19,7 +21,7 @@ export interface AnalisisCompleto {
   paridadDist: number[];
   consecutivosDist: number[];
   sumaDist: { rango: string; desde: number; hasta: number; count: number; pct: number }[];
- decenasDist: { decena: string; color: string; count: number; pct: number; avgPorSorteo: number }[];
+  decenasDist: { decena: string; color: string; count: number; pct: number; avgPorSorteo: number }[];
   paresFrecuentes: { par: [number, number]; veces: number }[];
   tripletasFrecuentes: { tripla: [number, number, number]; veces: number }[];
   sesgoSaleRev: { numero: number; salePct: number; revPct: number; delta: number }[];
@@ -35,6 +37,9 @@ export interface ConfigTarjeta {
   filtroParidad: [number, number];
   filtroSuma: [number, number];
   penalizarConsecutivos: boolean;
+  usarParesFrecuentes: boolean;
+  usarTripletas: boolean;
+  evitarRepeticionReciente: boolean;
 }
 
 export interface TarjetaGenerada {
@@ -45,25 +50,29 @@ export interface TarjetaGenerada {
   vencidosIncluidos: number[];
   decenasUsadas: number[];
   confianza: number;
+  score: number;
+  razones: string[];
 }
 
 // ── Basic stats ─────────────────────────────────────────────────────────────
 
 export function calcularEstadisticas(sorteos: Sorteo[]): EstadisticaNumero[] {
   const stats: EstadisticaNumero[] = Array.from({ length: 47 }, (_, i) => ({
-    numero: i, frecuencia: 0, frecSALE: 0, frecREV: 0,
+    numero: i, frecuencia: 0, frecSALE: 0, frecREV: 0, frecTRAD: 0, frec2DA: 0,
     ultimaVez: '', ausencia: sorteos.length, puntaje: 0,
     cicloMedio: 0, maxGap: 0, ratio: 0, estado: 'NORMAL',
   }));
 
-  // Track appearances per number for gap calculation
   const appearances: number[][] = Array.from({ length: 47 }, () => []);
 
   sorteos.forEach((s, idx) => {
     numerosArray(s).forEach(n => {
       if (n < 0 || n > 46) return;
       stats[n].frecuencia++;
-      if (s.tipo === 'SALE') stats[n].frecSALE++; else stats[n].frecREV++;
+      if (s.tipo === 'SALE') stats[n].frecSALE++;
+      else if (s.tipo === 'REV') stats[n].frecREV++;
+      else if (s.tipo === 'TRAD') stats[n].frecTRAD++;
+      else if (s.tipo === '2DA') stats[n].frec2DA++;
       if (!stats[n].ultimaVez) {
         stats[n].ultimaVez = s.fecha;
         stats[n].ausencia = idx;
@@ -72,7 +81,6 @@ export function calcularEstadisticas(sorteos: Sorteo[]): EstadisticaNumero[] {
     });
   });
 
-  // Calculate ciclo medio and max gap
   const totalSorteos = sorteos.length;
   stats.forEach((s, n) => {
     const apps = appearances[n].sort((a, b) => a - b);
@@ -84,13 +92,11 @@ export function calcularEstadisticas(sorteos: Sorteo[]): EstadisticaNumero[] {
       s.cicloMedio = totalSorteos;
       s.maxGap = totalSorteos;
     }
-    // Ratio
     if (s.cicloMedio > 0) {
       s.ratio = s.ausencia / s.cicloMedio;
     } else {
       s.ratio = s.frecuencia === 0 ? 999 : 0;
     }
-    // Estado
     if (s.ausencia === 0) s.estado = 'CALIENTE';
     else if (s.ratio >= 1.5) s.estado = 'VENCIDO';
     else if (s.ratio >= 1.0) s.estado = 'ATRASADO';
@@ -99,7 +105,6 @@ export function calcularEstadisticas(sorteos: Sorteo[]): EstadisticaNumero[] {
 
   const maxFrec = Math.max(...stats.map(s => s.frecuencia), 1);
   const maxAus = Math.max(...stats.map(s => s.ausencia), 1);
-
   stats.forEach(s => {
     s.puntaje = (s.frecuencia / maxFrec) * 0.4 + (s.ausencia / maxAus) * 0.6;
   });
@@ -122,7 +127,7 @@ export function calcularParidad(sorteos: Sorteo[]): number[] {
 // ── Consecutivos ────────────────────────────────────────────────────────────
 
 export function calcularConsecutivos(sorteos: Sorteo[]): number[] {
-  const dist = new Array(4).fill(0); // 0,1,2,3+
+  const dist = new Array(4).fill(0);
   sorteos.forEach(s => {
     const nums = numerosArray(s).sort((a, b) => a - b);
     let consec = 0;
@@ -233,13 +238,8 @@ export function calcularSesgoSaleRev(sorteos: Sorteo[]): { numero: number; saleP
   let saleTotal = 0, revTotal = 0;
   sorteos.forEach(s => {
     const nums = numerosArray(s);
-    if (s.tipo === 'SALE') {
-      saleTotal++;
-      nums.forEach(n => saleCount[n]++);
-    } else {
-      revTotal++;
-      nums.forEach(n => revCount[n]++);
-    }
+    if (s.tipo === 'SALE') { saleTotal++; nums.forEach(n => saleCount[n]++); }
+    else if (s.tipo === 'REV') { revTotal++; nums.forEach(n => revCount[n]++); }
   });
   return Array.from({ length: 47 }, (_, i) => ({
     numero: i,
@@ -281,14 +281,70 @@ export function calcularTendencias(sorteos: Sorteo[], ventana = 30): { numero: n
   const totalHist = sorteos.length;
   const freqRecientes = new Array(47).fill(0);
   recientes.forEach(s => numerosArray(s).forEach(n => freqRecientes[n]++));
-  const freqHistorica = new Array(47).fill(0);
-  sorteos.forEach(s => numerosArray(s).forEach(n => freqRecientes[n]++));
   return Array.from({ length: 47 }, (_, i) => ({
     numero: i,
     ultimos30: freqRecientes[i],
     media30: parseFloat(((freqRecientes[i] / totalHist) * ventana).toFixed(1)),
     delta: 0,
   })).map(s => ({ ...s, delta: s.ultimos30 - s.media30 }));
+}
+
+// ── Score compuesto multi-señal ─────────────────────────────────────────────
+
+function computeScore(
+  n: number,
+  stats: EstadisticaNumero[],
+  config: ConfigTarjeta,
+  paresFrecuentes: { par: [number, number]; veces: number }[],
+  tripletasFrecuentes: { tripla: [number, number, number]; veces: number }[],
+  recientesNumeros: Set<number>,
+  sesgo: { numero: number; salePct: number; revPct: number; delta: number }[],
+): number {
+  const s = stats[n];
+  let peso = s.puntaje;
+  const razones: string[] = [];
+
+  // 1. Sesgo SALE / REV — modo ajusta frecuencia por tipo
+  if (config.modo === 'SALE') {
+    peso += s.frecSALE * 0.015;
+    if (s.frecSALE > 0) razones.push('SALE');
+  } else if (config.modo === 'REV') {
+    peso += s.frecREV * 0.015;
+    if (s.frecREV > 0) razones.push('REV');
+  }
+
+  // 2. Semáforo — vencidos/atrasados priorizados
+  if (config.incluirVencidos) {
+    if (s.estado === 'VENCIDO') { peso *= 1.6; razones.push('VENCIDO'); }
+    else if (s.estado === 'ATRASADO') { peso *= 1.25; razones.push('ATRASADO'); }
+    else if (s.estado === 'CALIENTE') { peso *= 0.7; razones.push('CALIENTE'); }
+  }
+
+  // 3. Pares frecuentes — bonus si forma par frecuente
+  if (config.usarParesFrecuentes) {
+    const relevantPairs = paresFrecuentes.filter(p => p.par[0] === n || p.par[1] === n);
+    if (relevantPairs.length > 0) {
+      peso *= 1 + (relevantPairs[0].veces / 100);
+      razones.push('PAR-FREC');
+    }
+  }
+
+  // 4. Tripletas frecuentes — bonus si es parte de tripla frecuente
+  if (config.usarTripletas) {
+    const inTripletas = tripletasFrecuentes.filter(t => t.tripla.includes(n));
+    if (inTripletas.length > 0) {
+      peso *= 1 + (inTripletas[0].veces / 150);
+      razones.push('TRIPLA-FREC');
+    }
+  }
+
+  // 5. Evitar números del último sorteo (evitar repetición reciente)
+  if (config.evitarRepeticionReciente && recientesNumeros.has(n)) {
+    peso *= 0.3;
+    razones.push('ÚLTIMO');
+  }
+
+  return peso;
 }
 
 // ── Advanced card generator ─────────────────────────────────────────────────
@@ -298,61 +354,61 @@ export function generarTarjetaAvanzada(
   config: ConfigTarjeta = {
     modo: 'AMBOS', incluirVencidos: true, respetoDecenas: true,
     filtroParidad: [2, 4], filtroSuma: [111, 180], penalizarConsecutivos: true,
-  }
+    usarParesFrecuentes: true, usarTripletas: true, evitarRepeticionReciente: true,
+  },
+  allSorteos: Sorteo[] = [],
+  paresFrecuentes: { par: [number, number]; veces: number }[] = [],
+  tripletasFrecuentes: { tripla: [number, number, number]; veces: number }[] = [],
+  sesgo: { numero: number; salePct: number; revPct: number; delta: number }[] = [],
 ): TarjetaGenerada {
-  const { filtroParidad, filtroSuma, penalizarConsecutivos, incluirVencidos, respetoDecenas, modo } = config;
+  const { filtroParidad, filtroSuma, penalizarConsecutivos, respetoDecenas } = config;
 
-  // Score compuesto
-  const scores = stats.map(s => {
-    let peso = s.puntaje;
-    // Sesgo SALE/REV
-    if (modo === 'SALE') peso += s.frecSALE * 0.01;
-    if (modo === 'REV') peso += s.frecREV * 0.01;
-    // Priorizar vencidos
-    if (incluirVencidos && s.estado === 'VENCIDO') peso *= 1.5;
-    if (s.estado === 'ATRASADO') peso *= 1.2;
-    // Calentar (reciente)
-    if (s.ausencia === 0) peso *= 0.5; // no repetir el último
-    return { numero: s.numero, score: peso };
-  });
+  // Último sorteo para evitar repetición
+  const recientesNumeros = new Set<number>();
+  if (config.evitarRepeticionReciente && allSorteos.length > 0) {
+    numerosArray(allSorteos[0]).forEach(n => recientesNumeros.add(n));
+  }
 
-  const elegir = (): number => {
-    const total = scores.reduce((a, s) => a + s.score, 0);
+  // Scores compuestos
+  const scored = stats.map((s, n) => ({
+    numero: n,
+    score: computeScore(n, stats, config, paresFrecuentes, tripletasFrecuentes, recientesNumeros, sesgo),
+  }));
+
+  const elegir = (pool: typeof scored): number => {
+    const total = pool.reduce((a, s) => a + s.score, 0);
     let r = Math.random() * total;
-    for (const s of scores) {
+    for (const s of pool) {
       r -= s.score;
       if (r <= 0) return s.numero;
     }
-    return scores[0].numero;
+    return pool[0].numero;
   };
 
   const elegida: number[] = [];
   const agregados = new Set<number>();
 
+  // Respeto decenas: al menos 1 de cada decena 0-9, 10-19, 20-29, 30-39
   if (respetoDecenas) {
-    // Al menos 1 de cada decena 0-9, 10-19, 20-29, 30-39
     const decenasGroups = [
-      stats.filter(s => s.numero <= 9),
-      stats.filter(s => s.numero >= 10 && s.numero <= 19),
-      stats.filter(s => s.numero >= 20 && s.numero <= 29),
-      stats.filter(s => s.numero >= 30 && s.numero <= 39),
+      scored.filter(s => s.numero <= 9),
+      scored.filter(s => s.numero >= 10 && s.numero <= 19),
+      scored.filter(s => s.numero >= 20 && s.numero <= 29),
+      scored.filter(s => s.numero >= 30 && s.numero <= 39),
     ];
     for (const grupo of decenasGroups) {
       if (!grupo.length) continue;
-      const total = grupo.reduce((a, s) => a + s.puntaje, 0);
-      let r = Math.random() * total;
-      for (const s of grupo) {
-        r -= s.puntaje;
-        if (r <= 0) { agregados.add(s.numero); break; }
-      }
+      const n = elegir(grupo);
+      agregados.add(n);
+      elegida.push(n);
     }
   }
 
   // Llenar hasta 6
   while (elegida.length < 6) {
-    const pool = scores.filter(s => !agregados.has(s.numero));
+    const pool = scored.filter(s => !agregados.has(s.numero));
     if (!pool.length) break;
-    const n = elegir();
+    const n = elegir(pool);
     if (!agregados.has(n)) {
       agregados.add(n);
       elegida.push(n);
@@ -363,31 +419,29 @@ export function generarTarjetaAvanzada(
   const suma = numeros.reduce((a, b) => a + b, 0);
   const pares = numeros.filter(n => n % 2 === 0).length;
 
-  // Count consecutive
   let consecutivos = 0;
   for (let i = 1; i < numeros.length; i++) {
     if (numeros[i] - numeros[i - 1] === 1) consecutivos++;
   }
 
-  // Vencidos incluidos
   const vencidosIncluidos = numeros.filter(n => {
     const s = stats[n];
     return s.estado === 'VENCIDO' || s.estado === 'ATRASADO';
   });
 
-  // Decenas usadas
   const decenasUsadas = Array.from(new Set(numeros.map(n => Math.floor(n / 10))));
 
-  // Confianza simple
+  // Confianza
   let confianza = 50;
   if (pares >= filtroParidad[0] && pares <= filtroParidad[1]) confianza += 15;
   if (suma >= filtroSuma[0] && suma <= filtroSuma[1]) confianza += 15;
   if (consecutivos === 0) confianza += 10;
-  if (consecutivos === 1) confianza += 5;
+  else if (consecutivos === 1) confianza += 5;
   if (vencidosIncluidos.length >= 2) confianza += 10;
+  if (numeros.filter(n => recientesNumeros.has(n)).length === 0) confianza += 5;
   confianza = Math.min(100, confianza);
 
-  return { numeros, suma, pares, consecutivos, vencidosIncluidos, decenasUsadas, confianza };
+  return { numeros, suma, pares, consecutivos, vencidosIncluidos, decenasUsadas, confianza, score: 0, razones: [] };
 }
 
 // ── Original basic generator ────────────────────────────────────────────────
@@ -400,9 +454,7 @@ export function generarTarjeta(stats: EstadisticaNumero[]): number[] {
     stats.filter(s => s.numero >= 30 && s.numero <= 39),
     stats.filter(s => s.numero >= 40),
   ];
-
   const elegidos = new Set<number>();
-
   for (const grupo of decenas) {
     if (!grupo.length) continue;
     const total = grupo.reduce((a, s) => a + s.puntaje + 0.01, 0);
@@ -412,12 +464,10 @@ export function generarTarjeta(stats: EstadisticaNumero[]): number[] {
       if (r <= 0) { elegidos.add(s.numero); break; }
     }
   }
-
   for (const s of [...stats].sort((a, b) => b.puntaje - a.puntaje)) {
     if (elegidos.size >= 6) break;
     elegidos.add(s.numero);
   }
-
   return Array.from(elegidos).sort((a, b) => a - b);
 }
 
