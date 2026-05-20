@@ -43,7 +43,7 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
         <div className="h-px w-12 bg-blue-400/50" />
       </div>
 
-      <p className="mt-6 text-sm text-slate-400 tracking-widest uppercase">Tablero de Mando</p>
+      <p className="mt-6 text-sm text-slate-400 tracking-widest uppercase">Lo que nunca te contaron</p>
     </div>
   );
 }
