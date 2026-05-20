@@ -6,6 +6,7 @@ import { HistoricoView } from '@/components/HistoricoView';
 import { EstadisticoView } from '@/components/EstadisticoView';
 import { Historico2daView } from '@/components/Historico2daView';
 import { Estadistico2daView } from '@/components/Estadistico2daView';
+import { PremiadosView } from '@/components/PremiadosView';
 import { Sorteo, UltimaSync } from '@/lib/types';
 import { EstadisticaNumero } from '@/lib/analysis';
 import { SplashScreen } from '@/components/SplashScreen';
@@ -24,6 +25,7 @@ const TAB_LABELS: Record<Tab, string> = {
   estadistico: 'Estadístico SALE-REV',
   historico2da: 'Histórico 2DA-TRAD',
   estadistico2da: 'Estadístico 2DA-TRAD',
+  premios: 'Premios',
 };
 
 export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }: Props) {
@@ -84,6 +86,9 @@ export function DashboardShell({ sorteos, allSorteos, stats, total, ultimaSync }
         )}
         {activeTab === 'estadistico2da' && (
           <Estadistico2daView />
+        )}
+        {activeTab === 'premios' && (
+          <PremiadosView />
         )}
       </main>
     </div>

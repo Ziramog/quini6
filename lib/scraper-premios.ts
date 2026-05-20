@@ -13,7 +13,9 @@ export interface PremioDraw {
 const PREMIO_URL = 'https://www.quini-6-resultados.com.ar/';
 
 export async function scrapePremios(): Promise<PremioDraw> {
-  const res = await fetch(PREMIO_URL);
+  const res = await fetch(PREMIO_URL, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const html = await res.text();
 

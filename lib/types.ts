@@ -1,4 +1,4 @@
-export type Tab = 'historico' | 'estadistico' | 'historico2da' | 'estadistico2da';
+export type Tab = 'historico' | 'estadistico' | 'historico2da' | 'estadistico2da' | 'premios';
 
 export type TipoSorteo = 'SALE' | 'REV' | 'TRAD' | '2DA';
 

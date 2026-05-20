@@ -13,6 +13,7 @@ const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: 'estadistico', label: 'Estadístico SALE-REV', icon: '📊' },
   { id: 'historico2da', label: 'Histórico 2DA-TRAD', icon: '📋' },
   { id: 'estadistico2da', label: 'Estadístico 2DA-TRAD', icon: '📊' },
+  { id: 'premios', label: 'Premios', icon: '🏆' },
 ];
 
 export function Sidebar({ activeTab, onTabChange }: Props) {
