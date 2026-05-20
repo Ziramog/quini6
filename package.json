@@ -15,6 +15,7 @@
     "clsx": "^2.1.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
+    "lucide-react": "^1.16.0",
     "next": "^14.2.0",
     "pupeteer": "^0.0.1",
     "puppeteer": "^25.0.4",
