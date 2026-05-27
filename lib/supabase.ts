@@ -1,11 +1,42 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const getUrl = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set');
+  return url;
+};
 
-export const supabase = createClient(url, anonKey);
+const getAnonKey = () => {
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!key) throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is not set');
+  return key;
+};
 
-export const supabaseAdmin = createClient(url, adminKey, {
-  auth: { persistSession: false },
+const getAdminKey = () => {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set');
+  return key;
+};
+
+let _supabase: SupabaseClient | undefined;
+let _supabaseAdmin: SupabaseClient | undefined;
+
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_, prop) {
+    if (!_supabase) {
+      _supabase = createClient(getUrl(), getAnonKey());
+    }
+    return (_supabase as any)[prop];
+  },
+});
+
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+  get(_, prop) {
+    if (!_supabaseAdmin) {
+      _supabaseAdmin = createClient(getUrl(), getAdminKey(), {
+        auth: { persistSession: false },
+      });
+    }
+    return (_supabaseAdmin as any)[prop];
+  },
 });
