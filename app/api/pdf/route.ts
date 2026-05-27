@@ -1,96 +1,101 @@
 import { NextResponse } from 'next/server';
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium-min';
+import PDFDocument from 'pdfkit';
 import { getSorteos } from '@/lib/db';
 
-chromium.setGraphicsMode = false;
-
-function colorFondoNumero(n: number): string {
-  if (n <= 9)  return '#A5D6A7';
-  if (n <= 19) return '#FFCC80';
-  if (n <= 29) return '#EF9A9A';
-  if (n <= 39) return '#90CAF9';
-  return '#E0E0E0';
+function colorFondoNumero(n: number): number[] {
+  if (n <= 9)  return [165, 214, 167];
+  if (n <= 19) return [255, 204, 128];
+  if (n <= 29) return [239, 154, 154];
+  if (n <= 39) return [144, 202, 249];
+  return [224, 224, 224];
 }
 
-function colorPorNumero(n: number): string {
-  if (n <= 9)  return '#006100';
-  if (n <= 19) return '#9C6500';
-  if (n <= 29) return '#9C0006';
-  if (n <= 39) return '#0070C0';
-  return '#1a1a1a';
+function colorPorNumero(n: number): number[] {
+  if (n <= 9)  return [0, 97, 1];
+  if (n <= 19) return [156, 101, 0];
+  if (n <= 29) return [156, 0, 6];
+  if (n <= 39) return [0, 112, 192];
+  return [26, 26, 26];
 }
 
 function pad(n: number) {
   return String(n).padStart(2, '0');
 }
 
-function buildHtml(sorteos: any[]) {
-  const rows = sorteos.map((s, i) => `
-    <tr style="${i % 2 === 0 ? '' : 'background:#fafafa'}">
-      <td style="color:#999;text-align:right;padding:2pt 4pt;font-size:8pt">${s.num}</td>
-      <td style="text-align:left;padding:2pt 4pt;font-size:8pt">${s.fecha_display}</td>
-      ${[s.n1, s.n2, s.n3, s.n4, s.n5, s.n6].map((n: number) => `
-        <td style="text-align:center;padding:2pt">
-          <span style="display:inline-block;padding:1pt 3pt;border-radius:3pt;font-size:8pt;font-weight:bold;background-color:${colorFondoNumero(n)};color:${colorPorNumero(n)}">${pad(n)}</span>
-        </td>`).join('')}
-      <td style="text-align:center;padding:2pt 6pt">
-        <span style="display:inline-block;padding:1pt 4pt;border-radius:8pt;font-size:7pt;font-weight:bold;background-color:${s.tipo === 'SALE' ? '#dbeafe' : '#ffedd5'};color:${s.tipo === 'SALE' ? '#1d4ed8' : '#c2410c'}">${s.tipo}</span>
-      </td>
-    </tr>`).join('');
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-  body { font-family: Arial, sans-serif; padding: 5mm 15mm; background: white; }
-  h1 { font-size: 14pt; font-weight: bold; margin: 0 0 4px 0; }
-  p { font-size: 9pt; color: #666; margin: 0 0 16px 0; }
-  table { width: 100%; border-collapse: collapse; }
-  th { font-size: 7pt; text-transform: uppercase; color: #666; border-bottom: 1pt solid #ccc; padding: 2pt 4pt; text-align: left; }
-  td { font-size: 8pt; color: #333; }
-</style>
-</head>
-<body>
-<div style="border-bottom:1pt solid #ccc;padding-bottom:8px;margin-bottom:8px">
-  <h1>Quini 6 — Histórico de Sorteos</h1>
-  <p>${sorteos.length} sorteos</p>
-</div>
-<table>
-  <thead><tr><th>NUM</th><th>FECHA</th><th>N1</th><th>N2</th><th>N3</th><th>N4</th><th>N5</th><th>N6</th><th>SORTEO</th></tr></thead>
-  <tbody>${rows}</tbody>
-</table>
-</body>
-</html>`;
-}
-
 export async function GET() {
-  let browser;
   try {
-    const executablePath = await chromium.executablePath();
-    const chromiumArgs = await chromium.args;
-    browser = await puppeteer.launch({
-      executablePath,
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-web-security', ...chromiumArgs],
-    });
-
-    const page = await browser.newPage();
     const rows = await getSorteos();
     const sorteos = rows.map((s, i) => ({ ...s, num: rows.length - i }));
-    const html = buildHtml(sorteos);
 
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+    const chunks: Buffer[] = [];
 
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      landscape: false,
-      margin: { top: '8mm', bottom: '8mm', left: '0mm', right: '0mm' },
-      printBackground: true,
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => {});
+
+    // Header
+    doc.fontSize(16).font('Helvetica-Bold').text('Quini 6 — Historico de Sorteos', { align: 'center' });
+    doc.fontSize(9).font('Helvetica').fillColor('#666')
+       .text(`${sorteos.length} sorteos`, { align: 'center' });
+    doc.moveDown(1);
+
+    // Table header
+    const colWidths = [30, 80, 35, 35, 35, 35, 35, 35, 40];
+    const headers = ['NUM', 'FECHA', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'SORTEO'];
+    let x = 40;
+    doc.fontSize(7).font('Helvetica-Bold').fillColor('#666');
+    headers.forEach((h, i) => {
+      doc.text(h, x, doc.y, { width: colWidths[i], align: i === 0 ? 'right' : 'left' });
+      x += colWidths[i];
+    });
+    doc.moveDown(0.5);
+    doc.moveTo(40, doc.y).lineTo(795 - 40, doc.y).strokeColor('#ccc').stroke();
+    doc.moveDown(0.3);
+
+    // Rows
+    doc.fontSize(8).font('Helvetica');
+    sorteos.forEach((s, idx) => {
+      if (doc.y > 780) { doc.addPage(); }
+
+      const bg = colorFondoNumero(s.n1);
+      const fg = colorPorNumero(s.n1);
+      const nums = [s.n1, s.n2, s.n3, s.n4, s.n5, s.n6];
+
+      let y = doc.y;
+      x = 40;
+
+      // NUM
+      doc.fillColor('#999').text(String(s.num), x, y, { width: colWidths[0], align: 'right' });
+      x += colWidths[0];
+
+      // FECHA
+      doc.fillColor('#333').text(s.fecha_display || s.fecha, x, y, { width: colWidths[1] });
+      x += colWidths[1];
+
+      // Numbers
+      nums.forEach((n, ni) => {
+        const bg = colorFondoNumero(n);
+        const fg = colorPorNumero(n);
+        doc.fillColor(`rgb(${bg.join(',')})`).rect(x - 2, y - 1, 28, 14).fill();
+        doc.fillColor(`rgb(${fg.join(',')})`).text(pad(n), x, y, { width: colWidths[ni + 2] });
+        x += colWidths[ni + 2];
+      });
+
+      // TIPO
+      doc.fillColor(s.tipo === 'SALE' ? '#1d4ed8' : '#c2410c')
+         .text(s.tipo, x, y, { width: colWidths[8] });
+
+      doc.y = y + 18;
+      doc.fillColor('#333');
     });
 
-    return new NextResponse(Buffer.from(pdfBuffer), {
+    doc.end();
+
+    const pdfBuffer = await new Promise<Buffer>(resolve => {
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+    });
+
+    return new Response(pdfBuffer as unknown as BodyInit, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="quini6-historico.pdf"',
@@ -99,7 +104,5 @@ export async function GET() {
   } catch (err) {
     console.error('PDF error:', err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
-  } finally {
-    if (browser) await browser.close();
   }
 }
