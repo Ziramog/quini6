@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import { getSorteos2da } from '@/lib/db';
+
+chromium.setGraphicsMode = false;
 
 function colorFondoNumero(n: number): string {
   if (n <= 9)  return '#A5D6A7';
@@ -66,8 +69,9 @@ export async function GET() {
   let browser;
   try {
     browser = await puppeteer.launch({
+      executablePath: await chromium.executablePath(),
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-web-security', ...await chromium.args],
     });
 
     const page = await browser.newPage();

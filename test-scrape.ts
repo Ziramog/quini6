@@ -1,5 +1,5 @@
-import { scrapeTipo } from './lib/scraper.ts';
-import { getIdsExistentes } from './lib/db.ts';
+import { scrapeTipo } from './lib/scraper';
+import { getIdsExistentes } from './lib/db';
 
 const existentes = await getIdsExistentes();
 console.log('Existentes:', existentes.size, 'sorteos');
