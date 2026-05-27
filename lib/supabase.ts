@@ -1,30 +1,27 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const getUrl = () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!url) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set');
-  return url;
-};
+let _supabase: SupabaseClient | null = null;
+let _supabaseAdmin: SupabaseClient | null = null;
 
-const getAnonKey = () => {
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!key) throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is not set');
-  return key;
-};
+function getUrl() {
+  return process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+}
 
-const getAdminKey = () => {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set');
-  return key;
-};
+function getAnonKey() {
+  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+}
 
-let _supabase: SupabaseClient | undefined;
-let _supabaseAdmin: SupabaseClient | undefined;
+function getAdminKey() {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
+}
 
 export const supabase = new Proxy({} as SupabaseClient, {
   get(_, prop) {
     if (!_supabase) {
-      _supabase = createClient(getUrl(), getAnonKey());
+      const url = getUrl();
+      const key = getAnonKey();
+      if (!url || !key) return () => ({ data: [], error: { message: 'Supabase not configured' } });
+      _supabase = createClient(url, key);
     }
     return (_supabase as any)[prop];
   },
@@ -33,9 +30,10 @@ export const supabase = new Proxy({} as SupabaseClient, {
 export const supabaseAdmin = new Proxy({} as SupabaseClient, {
   get(_, prop) {
     if (!_supabaseAdmin) {
-      _supabaseAdmin = createClient(getUrl(), getAdminKey(), {
-        auth: { persistSession: false },
-      });
+      const url = getUrl();
+      const key = getAdminKey();
+      if (!url || !key) return () => ({ data: [], error: { message: 'Supabase not configured' } });
+      _supabaseAdmin = createClient(url, key, { auth: { persistSession: false } });
     }
     return (_supabaseAdmin as any)[prop];
   },
