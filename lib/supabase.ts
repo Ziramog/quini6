@@ -6,6 +6,7 @@ function createMockQuery() {
   chain.insert = () => chain;
   chain.update = () => chain;
   chain.delete = () => chain;
+  chain.upsert = () => chain;
   chain.eq = () => chain;
   chain.neq = () => chain;
   chain.in = () => chain;
