@@ -31,23 +31,23 @@ export default async function PrintRoute() {
         <h1 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '4px' }}>Quini 6 — Histórico de Sorteos</h1>
         <p style={{ fontSize: '9pt', color: '#666' }}>{sorteos.length} sorteos</p>
       </div>
-      <table className="sorteos-table">
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8pt', fontFamily: 'Helvetica, Arial, sans-serif' }}>
         <thead>
-          <tr>
-            <th>NUM</th>
-            <th>FECHA</th>
-            <th>N1</th>
-            <th>N2</th>
-            <th>N3</th>
-            <th>N4</th>
-            <th>N5</th>
-            <th>N6</th>
-            <th>SORTEO</th>
+          <tr style={{ background: '#f3f4f6', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <th style={{ padding: '4pt 2pt', textAlign: 'right', width: '30pt' }}>NUM</th>
+            <th style={{ padding: '4pt 2pt', textAlign: 'left' }}>FECHA</th>
+            <th style={{ padding: '4pt 2pt', textAlign: 'center', width: '28pt' }}>N1</th>
+            <th style={{ padding: '4pt 2pt', textAlign: 'center', width: '28pt' }}>N2</th>
+            <th style={{ padding: '4pt 2pt', textAlign: 'center', width: '28pt' }}>N3</th>
+            <th style={{ padding: '4pt 2pt', textAlign: 'center', width: '28pt' }}>N4</th>
+            <th style={{ padding: '4pt 2pt', textAlign: 'center', width: '28pt' }}>N5</th>
+            <th style={{ padding: '4pt 2pt', textAlign: 'center', width: '28pt' }}>N6</th>
+            <th style={{ padding: '4pt 2pt', textAlign: 'center', width: '35pt' }}>SORTEO</th>
           </tr>
         </thead>
         <tbody>
           {sorteos.map((s, i) => (
-            <tr key={s.id} style={i % 2 === 0 ? {} : { background: '#fafafa' }}>
+            <tr key={s.id} style={i % 2 === 0 ? { borderBottom: '1pt solid #e5e7eb' } : { background: '#fafafa', borderBottom: '1pt solid #e5e7eb' }}>
               <td style={{ color: '#999', textAlign: 'right', padding: '2pt 4pt', fontSize: '8pt' }}>{s.num}</td>
               <td style={{ textAlign: 'left', padding: '2pt 4pt', fontSize: '8pt' }}>{s.fecha_display}</td>
               {[s.n1, s.n2, s.n3, s.n4, s.n5, s.n6].map((n, j) => (
