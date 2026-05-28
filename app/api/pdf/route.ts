@@ -2,20 +2,20 @@ import { NextResponse } from 'next/server';
 import PDFDocument from 'pdfkit';
 import { getSorteos } from '@/lib/db';
 
-function colorFondoNumero(n: number): number[] {
-  if (n <= 9)  return [165, 214, 167];
-  if (n <= 19) return [255, 204, 128];
-  if (n <= 29) return [239, 154, 154];
-  if (n <= 39) return [144, 202, 249];
-  return [224, 224, 224];
+function colorFondoNumero(n: number): string {
+  if (n <= 9)  return '#A5D6A7';
+  if (n <= 19) return '#FFCC80';
+  if (n <= 29) return '#EF9A9A';
+  if (n <= 39) return '#90CAF9';
+  return '#E0E0E0';
 }
 
-function colorPorNumero(n: number): number[] {
-  if (n <= 9)  return [0, 97, 1];
-  if (n <= 19) return [156, 101, 0];
-  if (n <= 29) return [156, 0, 6];
-  if (n <= 39) return [0, 112, 192];
-  return [26, 26, 26];
+function colorPorNumero(n: number): string {
+  if (n <= 9)  return '#006100';
+  if (n <= 19) return '#9C6500';
+  if (n <= 29) return '#9C0006';
+  if (n <= 39) return '#0070C0';
+  return '#1a1a1a';
 }
 
 function pad(n: number) {
@@ -54,11 +54,9 @@ export async function GET() {
 
     // Rows
     doc.fontSize(8).font('Helvetica');
-    sorteos.forEach((s, idx) => {
+    sorteos.forEach((s) => {
       if (doc.y > 780) { doc.addPage(); }
 
-      const bg = colorFondoNumero(s.n1);
-      const fg = colorPorNumero(s.n1);
       const nums = [s.n1, s.n2, s.n3, s.n4, s.n5, s.n6];
 
       let y = doc.y;
@@ -76,8 +74,8 @@ export async function GET() {
       nums.forEach((n, ni) => {
         const bg = colorFondoNumero(n);
         const fg = colorPorNumero(n);
-        doc.fillColor(`rgb(${bg.join(',')})`).rect(x - 2, y - 1, 28, 14).fill();
-        doc.fillColor(`rgb(${fg.join(',')})`).text(pad(n), x, y, { width: colWidths[ni + 2] });
+        doc.fillColor(bg).rect(x - 2, y - 1, 28, 14).fill();
+        doc.fillColor(fg).text(pad(n), x, y, { width: colWidths[ni + 2] });
         x += colWidths[ni + 2];
       });
 
