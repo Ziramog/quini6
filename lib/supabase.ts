@@ -28,13 +28,13 @@ let _supabaseAdmin: SupabaseClient | undefined;
 
 export const supabase = new Proxy({} as SupabaseClient, {
   get(_, prop) {
-    if (prop === 'from') {
-      return (tableName: string) => createMockFrom(tableName);
-    }
     if (!_supabase) {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       if (!url || !key) {
+        if (prop === 'from') {
+          return (tableName: string) => createMockFrom(tableName);
+        }
         const mock: any = createMockQuery();
         return mock[prop] ?? mock;
       }
@@ -46,16 +46,16 @@ export const supabase = new Proxy({} as SupabaseClient, {
 
 export const supabaseAdmin = new Proxy({} as SupabaseClient, {
   get(_, prop) {
-    if (prop === 'from') {
-      return (tableName: string) => createMockFrom(tableName);
-    }
-    if (prop === 'rpc') {
-      return () => Promise.resolve({ data: null, error: null } as any);
-    }
     if (!_supabaseAdmin) {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
       if (!url || !key) {
+        if (prop === 'from') {
+          return (tableName: string) => createMockFrom(tableName);
+        }
+        if (prop === 'rpc') {
+          return () => Promise.resolve({ data: null, error: null } as any);
+        }
         const mock: any = createMockQuery();
         return mock[prop] ?? mock;
       }
