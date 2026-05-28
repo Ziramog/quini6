@@ -43,7 +43,7 @@ export async function GET() {
     let x = 40;
     doc.fontSize(7).font('Helvetica-Bold').fillColor('#666');
     headers.forEach((h, i) => {
-      doc.text(h, x, doc.y, { width: colWidths[i], align: i === 0 ? 'right' : 'left' });
+      doc.text(h, x, doc.y, { width: colWidths[i], align: i === 0 ? 'right' : 'left', continued: i < headers.length - 1 });
       x += colWidths[i];
     });
     doc.moveDown(0.5);
