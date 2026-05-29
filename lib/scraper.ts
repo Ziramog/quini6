@@ -2,10 +2,10 @@ import * as cheerio from 'cheerio';
 import { Sorteo, TipoSorteo } from './types';
 
 const URLS: Record<TipoSorteo, string> = {
-  SALE: 'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-segunda-vuelta/resultados-anteriores-quini-6-segunda-vuelta-ar',
-  REV:  'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-revancha/resultados-anteriores-quini-6-revancha-ar',
-  TRAD: 'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-tradicional/resultados-anteriores-quini-6-tradicional-ar',
-  '2DA': 'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-segunda-vuelta/resultados-anteriores-quini-6-segunda-vuelta-ar',
+  SALE:  'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-siempre-sale',
+  REV:   'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-revancha/resultados-anteriores-quini-6-revancha-ar',
+  TRAD:  'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-tradicional/resultados-anteriores-quini-6-tradicional-ar',
+  '2DA': 'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-segunda-vuelta',
 };
 
 const HEADERS = {
