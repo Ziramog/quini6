@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { scrapeTipo } from '@/lib/scraper';
-import { getIdsExistentes, upsertSorteos, registrarSync, recalcularNums, getTotalSorteos } from '@/lib/db';
+import { getIdsExistentes, upsertSorteos, registrarSync, recalcularNums, getTotalSorteos, getLastDate } from '@/lib/db';
 import { Sorteo } from '@/lib/types';
 
 export async function POST() {
   try {
-    const rawTRAD = await scrapeTipo('TRAD');
+    const [lastTRAD, last2DA] = await Promise.all([getLastDate('TRAD'), getLastDate('2DA')]);
+    const rawTRAD = await scrapeTipo('TRAD', lastTRAD ?? undefined);
     await new Promise(r => setTimeout(r, 1000));
-    const raw2DA  = await scrapeTipo('2DA');
+    const raw2DA  = await scrapeTipo('2DA', last2DA ?? undefined);
 
     const existentes = await getIdsExistentes();
     const nuevos = [...rawTRAD, ...raw2DA]

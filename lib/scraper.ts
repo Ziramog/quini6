@@ -2,10 +2,10 @@ import * as cheerio from 'cheerio';
 import { Sorteo, TipoSorteo } from './types';
 
 const URLS: Record<TipoSorteo, string> = {
-  SALE:  'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-siempre-sale',
+  SALE:  'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-siempre-sale/resultados-anteriores-quini-6-siempre-sale-ar',
   REV:   'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-revancha/resultados-anteriores-quini-6-revancha-ar',
   TRAD:  'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-tradicional/resultados-anteriores-quini-6-tradicional-ar',
-  '2DA': 'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-segunda-vuelta',
+  '2DA': 'https://loteria.guru/resultados-loteria-argentina/ar-quini-6-segunda-vuelta/resultados-anteriores-quini-6-segunda-vuelta-ar',
 };
 
 const HEADERS = {
@@ -44,7 +44,10 @@ export function parseFechaES(texto: string): { iso: string; display: string; yea
   return { iso: '', display: texto, year: 0 };
 }
 
-export async function scrapeTipo(tipo: TipoSorteo): Promise<Partial<Sorteo>[]> {
+export async function scrapeTipo(
+  tipo: TipoSorteo,
+  minIso?: string,
+): Promise<Partial<Sorteo>[]> {
   const allSorteos: Partial<Sorteo>[] = [];
   let page = 1;
   let currentYear = new Date().getFullYear(); // anchor: page 1 is this year
@@ -61,6 +64,7 @@ export async function scrapeTipo(tipo: TipoSorteo): Promise<Partial<Sorteo>[]> {
     const lines = $('.lg-lottery-older-results .lg-line');
     if (lines.length === 0) { console.log(`[scrape ${tipo}] página ${page} vacía, termino`); break; }
 
+    let cutoffReached = false;
     lines.each((_, line) => {
       const dateEl = $(line).find('.lg-date.has-text-right');
       const fechaTxt = dateEl.text().replace(/\s+/g, ' ').trim();
@@ -80,10 +84,6 @@ export async function scrapeTipo(tipo: TipoSorteo): Promise<Partial<Sorteo>[]> {
         currentYear = parsed.year;
         justSawExplicitYear = true;
       } else {
-        // When month > prevMonth going backward through time, we've crossed a year boundary.
-        // e.g., prevMonth=9 (sep) → month=1 (jan) = crossed from sep back through aug→...→jan, into prev year
-        // The justSawExplicitYear flag prevents a false decrement on the entry immediately after
-        // an explicit-year entry (which has no month context to work with).
         if (month > prevMonth && prevMonth > 0 && !justSawExplicitYear) {
           currentYear--;
         }
@@ -92,6 +92,12 @@ export async function scrapeTipo(tipo: TipoSorteo): Promise<Partial<Sorteo>[]> {
       prevMonth = month;
 
       const iso = `${currentYear}-${month.toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
+
+      if (minIso && iso < minIso) {
+        cutoffReached = true;
+        return false; // stop iterating this page
+      }
+
       allSorteos.push({
         id: `${iso}_${tipo}`,
         num: 0,
@@ -102,6 +108,11 @@ export async function scrapeTipo(tipo: TipoSorteo): Promise<Partial<Sorteo>[]> {
         tipo,
       });
     });
+
+    if (cutoffReached) {
+      console.log(`[scrape ${tipo}] reached cutoff ${minIso} on page ${page}, stopping`);
+      break;
+    }
 
     console.log(`[scrape ${tipo}] página ${page}: ${lines.length} sorteos`);
     page++;

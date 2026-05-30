@@ -56,6 +56,18 @@ export async function getUltimaSync(): Promise<UltimaSync | null> {
   return data as UltimaSync;
 }
 
+export async function getLastDate(tipo: TipoSorteo): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('sorteos')
+    .select('fecha')
+    .eq('tipo', tipo)
+    .order('fecha', { ascending: false })
+    .limit(1)
+    .single();
+  if (error || !data) return null;
+  return (data as { fecha: string }).fecha;
+}
+
 export async function getIdsExistentes(): Promise<Set<string>> {
   const { data, error } = await supabaseAdmin
     .from('sorteos')
