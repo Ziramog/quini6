@@ -18,25 +18,38 @@ function formatDisplayDate(iso: string) {
 }
 
 async function proxyFetch(url: string): Promise<string> {
-  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-  const res = await fetch(proxyUrl, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
-  const json = await res.json();
-  if (json.status && json.status.http_code !== 200) {
-    throw new Error(`Target HTTP ${json.status.http_code} fetching ${url}`);
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    `https://thingproxy.freeboard.io/fetch/${url}`
+  ];
+
+  for (const proxy of proxies) {
+    try {
+      const res = await fetch(proxy, { cache: 'no-store' });
+      if (res.ok) {
+        const text = await res.text();
+        // Check if the response actually contains quini 6 content (not an error page)
+        if (text.includes('quini') || text.includes('Quini') || text.includes('Sorteo')) {
+          return text;
+        }
+      }
+    } catch (e) {
+      console.warn(`Proxy failed: ${proxy}`, e);
+    }
   }
-  return json.contents as string;
+  throw new Error(`Todos los proxies fallaron para ${url}. Posible bloqueo de Cloudflare o sin conexión.`);
 }
 
 export async function runClientSync(onProgress?: (msg: string) => void) {
   onProgress?.('Obteniendo últimas fechas...');
   const resLast = await fetch('/api/sync/last');
-  const lastDates = await resLast.json(); // { SALE: '2026-07-22', REV: '...', TRAD: '...', 2DA: '...' }
+  const lastDates = await resLast.json();
 
   onProgress?.('Descargando historial...');
   const html = await proxyFetch(SORTEOS_URL);
   
-  // Use DOMParser instead of cheerio
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
@@ -50,11 +63,8 @@ export async function runClientSync(onProgress?: (msg: string) => void) {
         const [, d, m, y] = match;
         const iso = `${y}-${m}-${d}`;
         if (!links.some(l => l.url === url)) {
-          // Check if it's newer than any of the last dates
-          // If we need TRAD, 2DA, REV, or SALE, we should check if iso > lastDates for any of them.
-          // To be safe, we just fetch if it's newer than the oldest lastDate, or just fetch all if missing.
           const minRequiredIso = Object.values(lastDates).reduce((min: string, cur: any) => {
-            if (!cur) return '0000-00-00'; // if any is missing, fetch all
+            if (!cur) return '0000-00-00';
             return (min === '0000-00-00' || cur < min) ? cur : min;
           }, '9999-99-99' as string);
           
@@ -69,7 +79,7 @@ export async function runClientSync(onProgress?: (msg: string) => void) {
   links.sort((a, b) => b.iso.localeCompare(a.iso));
   
   if (links.length === 0) {
-    onProgress?.('No hay sorteos nuevos.');
+    onProgress?.('✓ 0 nuevos. Todo al día.');
     return [];
   }
 
@@ -91,7 +101,6 @@ export async function runClientSync(onProgress?: (msg: string) => void) {
           const lastDateForTipo = lastDates[currentTipo];
           
           if (!lastDateForTipo || iso > lastDateForTipo) {
-            // Numbers are in the next element p.numeros
             let nextEl = el.nextElementSibling;
             if (nextEl && nextEl.tagName.toLowerCase() === 'p' && nextEl.classList.contains('numeros')) {
               const numsText = nextEl.textContent?.trim() || '';
@@ -114,7 +123,6 @@ export async function runClientSync(onProgress?: (msg: string) => void) {
     } catch (e) {
       console.warn(`Error fetching ${url}:`, e);
     }
-    // minimal delay in client
     await new Promise(r => setTimeout(r, 200));
   }
 
