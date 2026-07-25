@@ -1,6 +1,6 @@
 export { supabase, supabaseAdmin } from './supabase';
 import { supabase, supabaseAdmin } from './supabase';
-import { Sorteo, UltimaSync } from './types';
+import { Sorteo, UltimaSync, TipoSorteo } from './types';
 
 export async function getSorteos(limit?: number, offset?: number): Promise<Sorteo[]> {
   const query = supabase
