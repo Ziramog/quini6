@@ -1,18 +1,16 @@
 import { NextResponse } from 'next/server';
-import { scrapeTipo } from '@/lib/scraper';
-import { getIdsExistentes, upsertSorteos, registrarSync, recalcularNums, getTotalSorteos, getLastDate } from '@/lib/db';
+import { getIdsExistentes, upsertSorteos, recalcularNums, registrarSync, getTotalSorteos } from '@/lib/db';
 import { Sorteo } from '@/lib/types';
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
-    const [lastTRAD, last2DA] = await Promise.all([getLastDate('TRAD'), getLastDate('2DA')]);
-    const rawTRAD = await scrapeTipo('TRAD', lastTRAD ?? undefined);
-    await new Promise(r => setTimeout(r, 1000));
-    const raw2DA  = await scrapeTipo('2DA', last2DA ?? undefined);
+    const { sorteos } = await req.json();
+    if (!Array.isArray(sorteos)) {
+      return NextResponse.json({ ok: false, error: 'Payload must be an array of sorteos' }, { status: 400 });
+    }
 
     const existentes = await getIdsExistentes();
-    const nuevos = [...rawTRAD, ...raw2DA]
-      .filter(s => s.id && !existentes.has(s.id)) as Sorteo[];
+    const nuevos = (sorteos as Sorteo[]).filter(s => !existentes.has(s.id));
 
     if (nuevos.length > 0) {
       await upsertSorteos(nuevos);

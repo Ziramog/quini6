@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { runClientSync } from '@/lib/client-scraper';
 
 export function SyncButton2da() {
   const [loading, setLoading] = useState(false);
@@ -10,14 +11,26 @@ export function SyncButton2da() {
   async function sync() {
     setLoading(true); setMsg('');
     try {
-      const res  = await fetch('/api/sync2da', { method: 'POST' });
-      const json = await res.json();
-      setMsg(json.ok
-        ? `✓ ${json.nuevos} nuevos. Total: ${json.total}`
-        : `✗ ${json.error}`);
-      if (json.ok) router.refresh();
-    } catch { setMsg('✗ Error de red'); }
-    finally   { setLoading(false); }
+      const allSorteos = await runClientSync((m) => setMsg(m));
+      if (allSorteos && allSorteos.length > 0) {
+        setMsg('Guardando en base de datos...');
+        const res = await fetch('/api/sync/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sorteos: allSorteos }),
+        });
+        const json = await res.json();
+        setMsg(json.ok ? `✓ ${json.nuevos} nuevos guardados. Total: ${json.total}` : `✗ ${json.error}`);
+        if (json.ok) router.refresh();
+      } else {
+        setMsg('✓ 0 nuevos. Todo al día.');
+        router.refresh();
+      }
+    } catch (e: any) {
+      setMsg(`✗ Error: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
