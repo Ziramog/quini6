@@ -41,11 +41,13 @@ export async function GET() {
     const colWidths = [35, 90, 40, 40, 40, 40, 40, 40, 50];
     const headers = ['NUM', 'FECHA', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'SORTEO'];
     let x = 40;
-    doc.fontSize(8).font('Helvetica-Bold').fillColor('#666');
+    const headerY = doc.y;
+    doc.fontSize(9).font('Helvetica-Bold').fillColor('#666');
     headers.forEach((h, i) => {
-      doc.text(h, x, doc.y, { width: colWidths[i], align: i === 0 ? 'right' : 'left', continued: i < headers.length - 1 });
+      doc.text(h, x, headerY, { width: colWidths[i], align: i === 0 ? 'right' : (i >= 2 && i <= 7 ? 'center' : 'left') });
       x += colWidths[i];
     });
+    doc.y = headerY + 15;
     doc.moveDown(0.5);
     doc.moveTo(40, doc.y).lineTo(795 - 40, doc.y).strokeColor('#ccc').stroke();
     doc.moveDown(0.3);
@@ -59,24 +61,31 @@ export async function GET() {
       let y = doc.y;
       x = 40;
 
-      doc.fillColor('#999').text(String(s.num), x, y, { width: colWidths[0], align: 'right' });
+      // NUM
+      doc.fontSize(10).font('Helvetica');
+      doc.fillColor('#999').text(String(s.num), x, y + 2, { width: colWidths[0] - 5, align: 'right' });
       x += colWidths[0];
 
-      doc.fillColor('#333').text(s.fecha_display || s.fecha, x, y, { width: colWidths[1] });
+      // FECHA
+      doc.fillColor('#333').text(s.fecha_display || s.fecha, x, y + 2, { width: colWidths[1] });
       x += colWidths[1];
 
+      // Numbers
+      doc.fontSize(12).font('Helvetica-Bold');
       nums.forEach((n, ni) => {
         const bg = colorFondoNumero(n);
         const fg = colorPorNumero(n);
-        doc.fillColor(bg).rect(x - 2, y - 1, 32, 14).fill();
-        doc.fillColor(fg).text(pad(n), x, y, { width: colWidths[ni + 2] });
+        doc.fillColor(bg).rect(x + 2, y - 1, 32, 17).fill();
+        doc.fillColor(fg).text(pad(n), x + 2, y + 3, { width: 32, align: 'center' });
         x += colWidths[ni + 2];
       });
 
+      // TIPO
+      doc.fontSize(9).font('Helvetica-Bold');
       doc.fillColor(s.tipo === 'TRAD' ? '#6b21a8' : '#1d4ed8')
-         .text(s.tipo, x, y, { width: colWidths[8] });
+         .text(s.tipo, x, y + 2, { width: colWidths[8] });
 
-      doc.y = y + 20;
+      doc.y = y + 24;
       doc.fillColor('#333');
     });
 
