@@ -17,6 +17,17 @@ const TIPO_MAP: Record<string, TipoSorteo> = {
   'QUINI QUE SIEMPRE SALE': 'SALE',
 };
 
+async function proxyFetch(url: string): Promise<string> {
+  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+  const res = await fetch(proxyUrl, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
+  const json = await res.json();
+  if (json.status && json.status.http_code !== 200) {
+    throw new Error(`Target HTTP ${json.status.http_code} fetching ${url}`);
+  }
+  return json.contents as string;
+}
+
 export async function scrapeTipo(
   tipo: TipoSorteo,
   minIso?: string,
@@ -24,9 +35,7 @@ export async function scrapeTipo(
   const allSorteos: Partial<Sorteo>[] = [];
   
   // 1. Fetch the list of historical draws
-  const res = await fetch(SORTEOS_URL, { headers: HEADERS, cache: 'no-store' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} fetching list`);
-  const html = await res.text();
+  const html = await proxyFetch(SORTEOS_URL);
   const $ = cheerio.load(html);
 
   // 2. Extract links and their ISO dates
@@ -56,15 +65,11 @@ export async function scrapeTipo(
   // 3. Fetch each valid link and parse the numbers
   for (const { url, iso } of links) {
     console.log(`[scrape ${tipo}] Fetching ${url}`);
-    const drawRes = await fetch(url, { headers: HEADERS, cache: 'no-store' });
-    if (!drawRes.ok) {
-      console.warn(`[scrape ${tipo}] HTTP ${drawRes.status} for ${url}`);
-      continue;
-    }
-    const drawHtml = await drawRes.text();
-    const $draw = cheerio.load(drawHtml);
+    try {
+      const drawHtml = await proxyFetch(url);
+      const $draw = cheerio.load(drawHtml);
 
-    $draw('h3').each((_, el) => {
+      $draw('h3').each((_, el) => {
       // the title might have extra spaces, e.g. ' SORTEO TRADICIONAL'
       const h3Text = $draw(el).text().trim().toUpperCase();
       
@@ -93,6 +98,9 @@ export async function scrapeTipo(
         }
       }
     });
+    } catch (e) {
+      console.warn(`[scrape ${tipo}] Error fetching ${url}:`, e);
+    }
     
     // Slight delay to avoid being rate-limited
     await new Promise(r => setTimeout(r, 400));
