@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { UltimaSync } from '@/lib/types';
 import { runClientSync } from '@/lib/client-scraper';
@@ -7,9 +7,14 @@ import { runClientSync } from '@/lib/client-scraper';
 export function SyncButton({ ultimaSync }: { ultimaSync: UltimaSync | null }) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
+  useEffect(() => setMounted(true), []);
+
   async function sync() {
+    console.log('[SyncButton] Clickeado!');
+    alert('Iniciando sincronización... Por favor no cierres esta pestaña.');
     setLoading(true); setMsg('');
     try {
       const allSorteos = await runClientSync((m) => setMsg(m));
@@ -43,7 +48,7 @@ export function SyncButton({ ultimaSync }: { ultimaSync: UltimaSync | null }) {
       >
         {loading ? '⏳ Sincronizando...' : '🔄 Sincronizar'}
       </button>
-      {ultimaSync && !msg && (
+      {ultimaSync && !msg && mounted && (
         <span className="text-xs text-gray-500">
           Sync: {new Date(ultimaSync.ejecutado_en).toLocaleString('es-AR')} · {ultimaSync.nuevos} nuevos
         </span>

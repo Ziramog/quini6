@@ -9,6 +9,8 @@ export function SyncButton2da() {
   const router = useRouter();
 
   async function sync() {
+    console.log('[SyncButton2da] Clickeado!');
+    alert('Iniciando sincronización... Por favor no cierres esta pestaña.');
     setLoading(true); setMsg('');
     try {
       const allSorteos = await runClientSync((m) => setMsg(m));
