@@ -34,16 +34,16 @@ export async function GET() {
     doc.on('end', () => {});
 
     // Header
-    doc.fontSize(16).font('Helvetica-Bold').text('Quini 6 — Historico de Sorteos', { align: 'center' });
-    doc.fontSize(9).font('Helvetica').fillColor('#666')
+    doc.fontSize(18).font('Helvetica-Bold').text('Quini 6 — Historico de Sorteos', { align: 'center' });
+    doc.fontSize(10).font('Helvetica').fillColor('#666')
        .text(`${sorteos.length} sorteos`, { align: 'center' });
     doc.moveDown(1);
 
     // Table header
-    const colWidths = [30, 80, 35, 35, 35, 35, 35, 35, 40];
+    const colWidths = [35, 90, 40, 40, 40, 40, 40, 40, 50];
     const headers = ['NUM', 'FECHA', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'SORTEO'];
     let x = 40;
-    doc.fontSize(7).font('Helvetica-Bold').fillColor('#666');
+    doc.fontSize(8).font('Helvetica-Bold').fillColor('#666');
     headers.forEach((h, i) => {
       doc.text(h, x, doc.y, { width: colWidths[i], align: i === 0 ? 'right' : 'left', continued: i < headers.length - 1 });
       x += colWidths[i];
@@ -53,9 +53,9 @@ export async function GET() {
     doc.moveDown(0.3);
 
     // Rows
-    doc.fontSize(8).font('Helvetica');
+    doc.fontSize(9).font('Helvetica');
     sorteos.forEach((s) => {
-      if (doc.y > 780) { doc.addPage(); }
+      if (doc.y > 770) { doc.addPage(); }
 
       const nums = [s.n1, s.n2, s.n3, s.n4, s.n5, s.n6];
 
@@ -74,7 +74,7 @@ export async function GET() {
       nums.forEach((n, ni) => {
         const bg = colorFondoNumero(n);
         const fg = colorPorNumero(n);
-        doc.fillColor(bg).rect(x - 2, y - 1, 28, 14).fill();
+        doc.fillColor(bg).rect(x - 2, y - 1, 32, 14).fill();
         doc.fillColor(fg).text(pad(n), x, y, { width: colWidths[ni + 2] });
         x += colWidths[ni + 2];
       });
@@ -83,7 +83,7 @@ export async function GET() {
       doc.fillColor(s.tipo === 'SALE' ? '#1d4ed8' : '#c2410c')
          .text(s.tipo, x, y, { width: colWidths[8] });
 
-      doc.y = y + 18;
+      doc.y = y + 20;
       doc.fillColor('#333');
     });
 
