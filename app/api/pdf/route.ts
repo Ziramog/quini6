@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import PDFDocument from 'pdfkit';
 import { getSorteos } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 function colorFondoNumero(n: number): string {
   if (n <= 9)  return '#A5D6A7';
   if (n <= 19) return '#FFCC80';
