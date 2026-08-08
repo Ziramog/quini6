@@ -58,7 +58,13 @@ export async function GET() {
       siempre_sale: nSale.slice(0, 6),
     };
 
-    return NextResponse.json({ ok: true, data: [sorteo] });
+    return NextResponse.json({ ok: true, data: [sorteo] }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
   } catch (error: any) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }

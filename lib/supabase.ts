@@ -38,7 +38,11 @@ export const supabase = new Proxy({} as SupabaseClient, {
         const mock: any = createMockQuery();
         return mock[prop] ?? mock;
       }
-      _supabase = createClient(url, key);
+      _supabase = createClient(url, key, {
+        global: {
+          fetch: (fetchUrl, options) => fetch(fetchUrl, { ...options, cache: 'no-store' })
+        }
+      });
     }
     return (_supabase as any)[prop];
   },
@@ -59,7 +63,12 @@ export const supabaseAdmin = new Proxy({} as SupabaseClient, {
         const mock: any = createMockQuery();
         return mock[prop] ?? mock;
       }
-      _supabaseAdmin = createClient(url, key, { auth: { persistSession: false } });
+      _supabaseAdmin = createClient(url, key, { 
+        auth: { persistSession: false },
+        global: {
+          fetch: (fetchUrl, options) => fetch(fetchUrl, { ...options, cache: 'no-store' })
+        }
+      });
     }
     return (_supabaseAdmin as any)[prop];
   },
