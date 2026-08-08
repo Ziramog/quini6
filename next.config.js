@@ -34,6 +34,13 @@ const nextConfig = {
     }
     return config;
   },
+  experimental: {
+    serverComponentsExternalPackages: ['pdfkit'],
+    outputFileTracingIncludes: {
+      '/api/pdf': ['./node_modules/pdfkit/js/data/**/*'],
+      '/api/pdf2da': ['./node_modules/pdfkit/js/data/**/*'],
+    },
+  },
 };
 
 module.exports = nextConfig;
