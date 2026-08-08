@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { SyncButton2da } from '@/components/SyncButton2da';
 
 function colorFondoNumero(n: number): string {
   if (n <= 9)  return '#A5D6A7';
@@ -70,17 +71,7 @@ export function Historico2daView() {
           >
             {pdfLoading ? '⏳' : '🖨️'} PDF
           </button>
-          <button
-            onClick={async () => {
-              const res = await fetch('/api/sync2da', { method: 'POST' });
-              const json = await res.json();
-              if (json.ok) window.location.reload();
-              else alert(json.error || 'Error');
-            }}
-            className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition"
-          >
-            🔄 Sync 2DA
-          </button>
+          <SyncButton2da />
         </div>
       </div>
 

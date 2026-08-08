@@ -18,21 +18,7 @@ const tabs: { id: Tab; label: string; icon: string }[] = [
 
 export function Sidebar({ activeTab, onTabChange }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [resetting, setResetting] = useState(false);
-  const [resetMsg, setResetMsg] = useState('');
   const router = useRouter();
-
-  async function resetAll() {
-    if (!confirm('Esto borrará TODOS los sorteos y volverá a scraping todo desde cero. ¿Continuar?')) return;
-    setResetting(true); setResetMsg('');
-    try {
-      const res  = await fetch('/api/reset', { method: 'POST' });
-      const json = await res.json();
-      setResetMsg(json.ok ? `✓ ${json.total} recargados` : `✗ ${json.error}`);
-      if (json.ok) setTimeout(() => window.location.reload(), 1000);
-    } catch { setResetMsg('✗ Error de red'); }
-    finally   { setResetting(false); }
-  }
 
   return (
     <>
@@ -95,18 +81,6 @@ export function Sidebar({ activeTab, onTabChange }: Props) {
 
         {/* Footer */}
         <div className="p-4 border-t border-slate-700/50 space-y-2">
-          <button
-            onClick={resetAll} disabled={resetting}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-red-600/80 hover:bg-red-600
-                       disabled:opacity-40 text-white text-xs rounded-lg font-medium transition"
-          >
-            {resetting ? '⏳ Recargando...' : '🔁 Reset + Rescrape'}
-          </button>
-          {resetMsg && (
-            <p className={`text-xs text-center ${resetMsg.startsWith('✓') ? 'text-green-400' : 'text-red-400'}`}>
-              {resetMsg}
-            </p>
-          )}
           <p className="text-xs text-slate-500 text-center">Análisis estadístico</p>
           <p className="text-xs text-slate-600 text-center">No es predicción</p>
         </div>
