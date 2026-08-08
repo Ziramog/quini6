@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getIdsExistentes, upsertSorteos, recalcularNums, registrarSync, getTotalSorteos } from '@/lib/db';
 import { Sorteo } from '@/lib/types';
 
+import { revalidatePath } from 'next/cache';
+
 export async function POST(req: Request) {
   try {
     const { sorteos } = await req.json();
@@ -19,6 +21,8 @@ export async function POST(req: Request) {
 
     const total = await getTotalSorteos();
     await registrarSync(nuevos.length, total);
+
+    revalidatePath('/');
 
     return NextResponse.json({ ok: true, nuevos: nuevos.length, total });
   } catch (err) {
