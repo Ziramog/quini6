@@ -20,4 +20,4 @@ jobs:
           node-version: '22'
 
       - name: Run Sync
-        run: curl -I -s -L https://www.tujugada.com.ar/quini6.asp
+        run: curl -I -s -L https://www.jugandoonline.com.ar/resultados/quini-6
