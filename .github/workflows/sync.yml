@@ -20,4 +20,4 @@ jobs:
           node-version: '22'
 
       - name: Run Sync
-        run: curl -I -s https://www.quini-6-resultados.com.ar/quini6/sorteos-anteriores.aspx
+        run: curl -I -s -L https://www.tujugada.com.ar/quini6.asp
