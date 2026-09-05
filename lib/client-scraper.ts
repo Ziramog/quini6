@@ -23,8 +23,7 @@ export async function runClientSync(onProgress?: (msg: string) => void) {
   }
 
   const allSorteos: Partial<Sorteo>[] = [];
-  const s = jsonFetch.data[0];
-
+  
   const tipos: { key: string; name: TipoSorteo }[] = [
     { key: 'tradicional', name: 'TRAD' },
     { key: 'segunda', name: '2DA' },
@@ -32,20 +31,22 @@ export async function runClientSync(onProgress?: (msg: string) => void) {
     { key: 'siempre_sale', name: 'SALE' },
   ];
 
-  for (const t of tipos) {
-    const lastDateForTipo = lastDates[t.name] || '0000-00-00';
-    if (s.fecha > lastDateForTipo) {
-      const numbers = s[t.key];
-      if (numbers && numbers.length >= 6) {
-        allSorteos.push({
-          id: `${s.fecha}_${t.name}`,
-          num: s.sorteo,
-          fecha: s.fecha,
-          fecha_display: formatDisplayDate(s.fecha),
-          n1: numbers[0], n2: numbers[1], n3: numbers[2],
-          n4: numbers[3], n5: numbers[4], n6: numbers[5],
-          tipo: t.name,
-        });
+  for (const s of jsonFetch.data) {
+    for (const t of tipos) {
+      const lastDateForTipo = lastDates[t.name] || '0000-00-00';
+      if (s.fecha > lastDateForTipo) {
+        const numbers = s[t.key];
+        if (numbers && numbers.length >= 6) {
+          allSorteos.push({
+            id: `${s.fecha}_${t.name}`,
+            num: s.sorteo,
+            fecha: s.fecha,
+            fecha_display: formatDisplayDate(s.fecha),
+            n1: numbers[0], n2: numbers[1], n3: numbers[2],
+            n4: numbers[3], n5: numbers[4], n6: numbers[5],
+            tipo: t.name,
+          });
+        }
       }
     }
   }
